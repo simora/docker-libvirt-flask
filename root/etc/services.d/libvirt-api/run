@@ -4,7 +4,5 @@ echo "Starting flask Server."
 
 [ -z "$API_KEY" ] && API_KEY="abcdef123456"
 
-export FLASK_APP="/app/hello.py"
-
 exec \
-  flask run --host=0.0.0.0
+  /app/run.sh
