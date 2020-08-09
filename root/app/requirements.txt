@@ -3,3 +3,4 @@ lxml
 Flask
 gunicorn
 pyyaml
+werkzeug
