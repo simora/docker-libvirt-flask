@@ -28,6 +28,9 @@ class Config(object):
         retVal['hosts'] = self.hosts
         return retVal
 
+@app.on_event('startup')
+def startup():
+    AppConfig = Config(configFile='/config/config.yaml')
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -44,9 +47,8 @@ def hello():
 
 @app.route("/info")
 def info():
-    if len(app.config['hosts']) > 0:
-        return f"<h1 style='color:blue'>Name: {app.config['hosts'][0].name}</h1>"
+    if len(AppConfig.hosts) > 0:
+        return f"<h1 style='color:blue'>Name: {AppConfig.hosts[0]['name']}</h1>"
 
 if __name__ == "__main__":
-    app.config.update(Config(configFile='/config/config.yaml').to_dict())
     app.run(host='0.0.0.0')
