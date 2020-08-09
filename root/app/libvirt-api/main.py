@@ -30,6 +30,7 @@ class Config(object):
 def handle_exception(e):
     etype, value, tb = sys.exc_info()
     print(traceback.print_exception(etype, value, tb))
+    resp = {}
     resp['config'] = Config(configFile='/config/config.yaml').to_dict()
     resp['error'] = str(traceback.format_exc())
     return jsonify(resp), 500
