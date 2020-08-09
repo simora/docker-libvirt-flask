@@ -4,5 +4,7 @@ echo "Starting flask Server."
 
 [ -z "$API_KEY" ] && API_KEY="abcdef123456"
 
+cd /app/
+
 exec \
-  /bin/bash /app/run.sh
+  gunicorn --workers 4 -b 0.0.0.0:80 hello:hello
