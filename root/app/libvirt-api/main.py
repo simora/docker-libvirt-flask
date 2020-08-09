@@ -6,9 +6,9 @@ app = Flask(__name__)
 
 class LibvirtHost(dict):
     def __init__(self, *args, **kwargs):
-        if 'type' in kwargs.keys() and kwargs['type'] == 'qemu+ssh':
-            kwargs['uri'] = f"{kwargs['type']}://{kwargs['username']}@{kwargs['address']}/system?keyfile=/config/key/id_rsa.pub"
-            self.update(*args, **kwds)
+        self.update(*args, **kwargs)
+        if 'type' in self.keys() and self['type'] == 'qemu+ssh':
+            self['uri'] = f"{self['type']}://{self['username']}@{self['address']}/system?keyfile=/config/key/id_rsa.pub"
 
 class Config(object):
     hosts = []
