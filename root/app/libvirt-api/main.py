@@ -26,7 +26,7 @@ class Config(object):
             for host in self.rawConfig['hosts']:
                 self.hosts.append(LibvirtHost(config=host))
         return self
-    def to_dict(sefl):
+    def to_dict(self):
         retVal = {}
         retVal['hosts'] = self.hosts
         return retVal
