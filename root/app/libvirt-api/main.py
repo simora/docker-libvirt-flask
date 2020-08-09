@@ -26,7 +26,10 @@ def info():
     hosts = []
     if 'hosts' in config.keys():
         for host in config['hosts']:
-            hosts.append(LibvirtHost(config=host))
+            try:
+                hosts.append(LibvirtHost(config=host))
+            except:
+                return e
     if hosts.length() > 0:
         return f"<h1 style='color:blue'>Name: {hosts[0].name}</h1>"
     return "No can"
