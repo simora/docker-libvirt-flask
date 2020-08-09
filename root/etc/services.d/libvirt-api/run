@@ -7,4 +7,4 @@ echo "Starting flask Server."
 cd /app/
 
 exec \
-  gunicorn --workers 4 -b 0.0.0.0:80 hello:hello
+  gunicorn --workers 4 -b 0.0.0.0:80 wsgi:app
