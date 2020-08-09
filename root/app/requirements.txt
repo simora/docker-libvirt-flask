@@ -1,5 +1,0 @@
-libvirt-python
-lxml
-Flask
-gunicorn
-pyyaml
