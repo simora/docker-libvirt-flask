@@ -2,9 +2,9 @@
 
 echo "Starting flask Server."
 
-[ -z "$API_KEY" ] && API_KEY="abcdef123456"
+[ -z "$PORT" ] && PORT="80"
 
 cd /app/
 
 exec \
-  gunicorn --workers 4 -b 0.0.0.0:80 wsgi:app
+  gunicorn --workers 4 -b 0.0.0.0:$PORT wsgi:app
