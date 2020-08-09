@@ -28,7 +28,7 @@ def info():
         for host in config['hosts']:
             hosts.append(LibvirtHost(config=host))
     for 'host' in hosts:
-        yield f"<h1 style='color:blue'>Name: {host.name}</h1>""
+        yield f"<h1 style='color:blue'>Name: {host.name}</h1>"
 
 if __name__ == "__main__":
     config = {}
