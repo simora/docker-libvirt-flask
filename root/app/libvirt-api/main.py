@@ -17,6 +17,21 @@ class LibvirtHost:
             return e
         return self
 
+class Config(object):
+    hosts = []
+    def __init__(self, configFile: str):
+        with open(configFile) as file:
+            self.rawConfig = yaml.load(file, Loader=yaml.FullLoader)
+        if 'hosts' in self.rawConfig.keys():
+            for host in self.rawConfig['hosts']:
+                self.hosts.append(LibvirtHost(config=host))
+        return self
+    def to_dict(sefl):
+        retVal = {}
+        retVal['hosts'] = self.hosts
+        return retVal
+
+
 @app.errorhandler(Exception)
 def handle_exception(e):
     return jsonify(error=str(e)), 500
@@ -27,19 +42,9 @@ def hello():
 
 @app.route("/info")
 def info():
-    hosts = []
-    if 'hosts' in config.keys():
-        for host in config['hosts']:
-            hosts.append(LibvirtHost(config=host))
     if hosts.length() > 0:
-        return f"<h1 style='color:blue'>Name: {hosts[0].name}</h1>"
-    return "No can"
+        return f"<h1 style='color:blue'>Name: {app.config['hosts'][0].name}</h1>"
 
 if __name__ == "__main__":
-    config = {}
-    with open(r'/config/config.yaml') as file:
-        # The FullLoader parameter handles the conversion from YAML
-        # scalar values to Python the dictionary format
-        config = yaml.load(file, Loader=yaml.FullLoader)
-
+    app.config.update(Config(configFile='/config/config.yaml').to_dict())
     app.run(host='0.0.0.0')
