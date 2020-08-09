@@ -1,4 +1,4 @@
-import yaml, traceback
+import yaml, traceback, sys
 
 from typing import Dict
 from flask import Flask, jsonify
@@ -44,7 +44,7 @@ def hello():
 
 @app.route("/info")
 def info():
-    if hosts.length() > 0:
+    if len(app.config['hosts']) > 0:
         return f"<h1 style='color:blue'>Name: {app.config['hosts'][0].name}</h1>"
 
 if __name__ == "__main__":
