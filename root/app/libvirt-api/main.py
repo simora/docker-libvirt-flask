@@ -15,7 +15,7 @@ class LibvirtHost(json.JSONEncoder):
     def default(self, obj):
         if hasattr(obj, "to_json"):
             return self.default(obj.to_json())
-        elif hasattr(obj, "__dict__"):
+        elif not isinstance(obj, dict):
             d = dict(
                 (key, value)
                 for key, value in inspect.getmembers(obj)
