@@ -4,32 +4,11 @@ from typing import Dict
 from flask import Flask, jsonify
 app = Flask(__name__)
 
-class LibvirtHost(json.JSONEncoder):
-    def __init__(self, config: Dict[str, str]):
-        if 'type' in config.keys() and 'type' == 'qemu+ssh':
-            self.name = config['name']
-            self.type = config['type']
-            self.username = config['username']
-            self.address = config['address']
-            self.uri = f'{self.type}://{self.username}@{self.address}/system?keyfile=/config/key/id_rsa.pub'
-    def __json__(self):
-        if hasattr(obj, "to_json"):
-            return self.default(obj.to_json())
-        else:
-            d = dict(
-                (key, value)
-                for key, value in inspect.getmembers(obj)
-                if not key.startswith("__")
-                and not inspect.isabstract(value)
-                and not inspect.isbuiltin(value)
-                and not inspect.isfunction(value)
-                and not inspect.isgenerator(value)
-                and not inspect.isgeneratorfunction(value)
-                and not inspect.ismethod(value)
-                and not inspect.ismethoddescriptor(value)
-                and not inspect.isroutine(value)
-            )
-            return json.dumps(d)
+class LibvirtHost(dict):
+    def __init__(self, *args, **kwargs):
+        if 'type' in kwargs.keys() and kwargs['type'] == 'qemu+ssh':
+            kwargs['uri'] = f'{kwargs['type']}://{kwargs['username']}@{kwargs['address']}/system?keyfile=/config/key/id_rsa.pub'
+            self.update(*args, **kwds)
 
 class Config(object):
     hosts = []
