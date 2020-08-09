@@ -1,10 +1,10 @@
-import yaml, traceback, sys
+import yaml, traceback, sys, json, inspect
 
 from typing import Dict
 from flask import Flask, jsonify
 app = Flask(__name__)
 
-class LibvirtHost(JsonSerializable):
+class LibvirtHost(json.JSONEncoder):
     def __init__(self, config: Dict[str, str]):
         if 'type' in config.keys() and 'type' == 'qemu+ssh':
             self.name = config['name']
@@ -12,6 +12,25 @@ class LibvirtHost(JsonSerializable):
             self.username = config['username']
             self.address = config['address']
             self.uri = f'{self.type}://{self.username}@{self.address}/system?keyfile=/config/key/id_rsa.pub'
+    def default(self, obj):
+        if hasattr(obj, "to_json"):
+            return self.default(obj.to_json())
+        elif hasattr(obj, "__dict__"):
+            d = dict(
+                (key, value)
+                for key, value in inspect.getmembers(obj)
+                if not key.startswith("__")
+                and not inspect.isabstract(value)
+                and not inspect.isbuiltin(value)
+                and not inspect.isfunction(value)
+                and not inspect.isgenerator(value)
+                and not inspect.isgeneratorfunction(value)
+                and not inspect.ismethod(value)
+                and not inspect.ismethoddescriptor(value)
+                and not inspect.isroutine(value)
+            )
+            return self.default(d)
+        return obj
 
 class Config(object):
     hosts = []
