@@ -1,7 +1,7 @@
 import yaml
 
 from typing import Dict
-from flask import Flask
+from flask import Flask, jsonify
 app = Flask(__name__)
 
 class LibvirtHost:
@@ -19,7 +19,7 @@ class LibvirtHost:
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    return e, 500
+    return jsonify(error=str(e)), 500
 
 @app.route("/")
 def hello():
