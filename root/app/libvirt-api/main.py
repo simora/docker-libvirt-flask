@@ -12,10 +12,10 @@ class LibvirtHost(json.JSONEncoder):
             self.username = config['username']
             self.address = config['address']
             self.uri = f'{self.type}://{self.username}@{self.address}/system?keyfile=/config/key/id_rsa.pub'
-    def default(self, obj):
+    def __json__(self):
         if hasattr(obj, "to_json"):
             return self.default(obj.to_json())
-        elif not isinstance(obj, dict):
+        else:
             d = dict(
                 (key, value)
                 for key, value in inspect.getmembers(obj)
@@ -29,8 +29,7 @@ class LibvirtHost(json.JSONEncoder):
                 and not inspect.ismethoddescriptor(value)
                 and not inspect.isroutine(value)
             )
-            return self.default(d)
-        return obj
+            return json.dumps(d)
 
 class Config(object):
     hosts = []
