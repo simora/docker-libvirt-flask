@@ -17,6 +17,10 @@ class LibvirtHost:
             return e
         return self
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    return e, 500
+
 @app.route("/")
 def hello():
     return "<h1 style='color:blue'>Welcome to the Libvirt Flask API</h1>"
@@ -26,10 +30,7 @@ def info():
     hosts = []
     if 'hosts' in config.keys():
         for host in config['hosts']:
-            try:
-                hosts.append(LibvirtHost(config=host))
-            except:
-                return e
+            hosts.append(LibvirtHost(config=host))
     if hosts.length() > 0:
         return f"<h1 style='color:blue'>Name: {hosts[0].name}</h1>"
     return "No can"
