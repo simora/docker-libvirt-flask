@@ -4,7 +4,7 @@ echo "Starting flask Server."
 
 [ -z "$PORT" ] && PORT="80"
 
-cd /app/
+cd /app/libvirt-api
 
 exec \
   gunicorn --workers 4 -b 0.0.0.0:$PORT wsgi:app
