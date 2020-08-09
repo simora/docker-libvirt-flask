@@ -4,7 +4,7 @@ from typing import Dict
 from flask import Flask, jsonify
 app = Flask(__name__)
 
-class LibvirtHost:
+class LibvirtHost(JsonSerializable):
     def __init__(self, config: Dict[str, str]):
         if 'type' in config.keys() and 'type' == 'qemu+ssh':
             self.name = config['name']
@@ -15,7 +15,7 @@ class LibvirtHost:
 
 class Config(object):
     hosts = []
-    
+
     def __init__(self, configFile: str):
         with open(configFile) as file:
             self.rawConfig = yaml.load(file, Loader=yaml.FullLoader)
