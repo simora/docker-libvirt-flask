@@ -29,6 +29,7 @@ def info():
             hosts.append(LibvirtHost(config=host))
     if hosts.length() > 0:
         return f"<h1 style='color:blue'>Name: {hosts[0].name}</h1>"
+    return "No can"
 
 if __name__ == "__main__":
     config = {}
