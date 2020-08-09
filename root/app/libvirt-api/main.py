@@ -6,26 +6,23 @@ app = Flask(__name__)
 
 class LibvirtHost:
     def __init__(self, config: Dict[str, str]):
-        try:
-            if 'type' in config.keys() and 'type' == 'qemu+ssh':
-                self.name = config['name']
-                self.type = config['type']
-                self.username = config['username']
-                self.address = config['address']
-                self.uri = f'{self.type}://{self.username}@{self.address}/system?keyfile=/config/key/id_rsa.pub'
-        except Exception as e:
-            return e
-        return self
+        if 'type' in config.keys() and 'type' == 'qemu+ssh':
+            self.name = config['name']
+            self.type = config['type']
+            self.username = config['username']
+            self.address = config['address']
+            self.uri = f'{self.type}://{self.username}@{self.address}/system?keyfile=/config/key/id_rsa.pub'
 
 class Config(object):
     hosts = []
+    
     def __init__(self, configFile: str):
         with open(configFile) as file:
             self.rawConfig = yaml.load(file, Loader=yaml.FullLoader)
         if 'hosts' in self.rawConfig.keys():
             for host in self.rawConfig['hosts']:
                 self.hosts.append(LibvirtHost(config=host))
-        return self
+
     def to_dict(self):
         retVal = {}
         retVal['hosts'] = self.hosts
