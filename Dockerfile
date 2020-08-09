@@ -14,4 +14,4 @@ RUN apt-get update && apt-get install -y \
       libxml2-dev \
       libxslt-dev
 
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip3 install --no-cache-dir -r /app/requirements.txt
