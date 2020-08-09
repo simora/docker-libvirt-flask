@@ -36,7 +36,9 @@ class Config(object):
 def handle_exception(e):
     etype, value, tb = sys.exc_info()
     print(traceback.print_exception(etype, value, tb))
-    return jsonify(error=str(traceback.format_exc()), config=Config(configFile='/config/config.yaml').to_dict()), 500
+    resp = Config(configFile='/config/config.yaml').to_dict()
+    resp['error'] = str(traceback.format_exc())
+    return jsonify(resp), 500
 
 @app.route("/")
 def hello():
