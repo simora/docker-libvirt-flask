@@ -1,4 +1,4 @@
-import yaml
+import yaml, traceback
 
 from typing import Dict
 from flask import Flask, jsonify
@@ -34,7 +34,9 @@ class Config(object):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    return jsonify(error=str(e)), 500
+    etype, value, tb = sys.exc_info()
+    return traceback.print_exception(etype, value, tb)
+    #return jsonify(error=str(e)), 500
 
 @app.route("/")
 def hello():
