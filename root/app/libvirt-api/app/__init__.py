@@ -1,7 +1,7 @@
 import yaml, traceback, sys, json, inspect
 
 from typing import Dict
-from flask import Flask, jsonify, g
+from flask import Flask, Config, jsonify
 
 class LibvirtHost(dict):
     def __init__(self, *args, **kwargs):
@@ -12,33 +12,22 @@ class LibvirtHost(dict):
         if 'type' in self.keys() and self['type'] == 'qemu+ssh':
             self['uri'] = f"{self['type']}://{self['username']}@{self['address']}/system?keyfile=/config/key/id_rsa.pub"
 
-class Config(object):
+class LibvirtConfig(object):
     hosts = []
 
-    def __init__(self, configFile: str):
+    def from_yaml(self, configFile: str):
         with open(configFile) as file:
             self.rawConfig = yaml.load(file, Loader=yaml.FullLoader)
-        if 'hosts' in self.rawConfig.keys():
-            for host in self.rawConfig['hosts']:
-                self.hosts.append(LibvirtHost(config=host))
-
-    def to_dict(self):
-        retVal = {}
-        retVal['hosts'] = self.hosts
-        return retVal
+        for key, value in self.rawConfig.items():
+            self[key] = value
 
 def create_app():
+    Flask.config_class = LibvirtConfig
     app = Flask(__name__, instance_relative_config=False)
-    app.config.update(dict(
-        HOST='localhost',
-        PORT='80',
-        DICT=Config(configFile='/config/config.yaml').to_dict()
-    ))
+    app.config.from_yaml(configFile='/config/config.yaml')
 
     with app.app_context():
         # Include our Routes
         from . import routes
-
-        g.config = 'test'
 
         return app
