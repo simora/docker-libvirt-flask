@@ -31,7 +31,8 @@ def create_app():
     app = Flask(__name__, instance_relative_config=False)
     app.config.update(dict(
         HOST='localhost',
-        PORT='80'
+        PORT='80',
+        DICT={'host':'localhost','port':'80'}
     ))
 
     with app.app_context():
