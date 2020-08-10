@@ -19,4 +19,4 @@ def hello():
 @app.route("/info")
 def info():
     with app.app_context():
-        return f"<h1 style='color:blue'>Name: {g.get(config,None)}</h1>"
+        return f"<h1 style='color:blue'>Name: {app.config['HOST']}</h1>"
