@@ -12,7 +12,7 @@ class LibvirtHost(dict):
         if 'type' in self.keys() and self['type'] == 'qemu+ssh':
             self['uri'] = f"{self['type']}://{self['username']}@{self['address']}/system?keyfile=/config/key/id_rsa.pub"
 
-class LibvirtConfig(object):
+class LibvirtConfig(Config):
     hosts = []
 
     def from_yaml(self, configFile: str):
