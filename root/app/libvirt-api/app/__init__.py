@@ -11,14 +11,20 @@ class LibvirtHost(dict):
         self.update(*args, **kwargs)
         if 'type' in self.keys() and self['type'] == 'qemu+ssh':
             self['uri'] = f"{self['type']}://{self['username']}@{self['address']}/system?keyfile=/config/key/id_rsa.pub"
+    @classmethod
+    def fromdict(cls, datadict):
+        return cls(datadict.items())
 
 class LibvirtConfig(Config):
-    hosts = []
-
     def from_yaml(self, configFile: str):
         with open(configFile) as file:
             self.rawConfig = yaml.load(file, Loader=yaml.FullLoader)
         for key, value in self.rawConfig.items():
+            if key.lower() == 'hosts' and len(value) > 0:
+                for host in value:
+                    if 'hosts' not in self.keys():
+                        self['hosts'] = []
+                    self['hosts'].append(LibvirtHost.fromdict(host))
             self[key] = value
 
 def create_app():
