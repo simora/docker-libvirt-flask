@@ -32,7 +32,7 @@ def create_app():
     app.config.update(dict(
         HOST='localhost',
         PORT='80',
-        DICT={'host':'localhost','port':'80'}
+        DICT=Config(configFile=''/config/config.yaml').to_dict()
     ))
 
     with app.app_context():
