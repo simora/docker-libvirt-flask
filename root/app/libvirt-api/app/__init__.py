@@ -33,7 +33,9 @@ def create_app():
     with app.app_context():
         # Include our Routes
         from . import routes
+        config = Config(configFile='/config/config.yaml')
+        g.config = config
 
-        g.config = Config(configFile='/config/config.yaml')
+        assert g.config == config
 
         return app
