@@ -22,6 +22,7 @@ class LibvirtConfig(Config):
         for key, value in self.rawConfig.items():
             if key.lower() == 'hosts' and len(value) > 0:
                 for host in value:
+                    continue
                     if 'hosts' not in self.keys():
                         self['hosts'] = []
                     self['hosts'].append(LibvirtHost.fromdict(host))
