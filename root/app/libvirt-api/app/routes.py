@@ -1,6 +1,7 @@
 import yaml, traceback, sys, json, inspect
 
 from flask import Flask, jsonify, g
+from flask import current_app as app
 
 @app.errorhandler(Exception)
 def handle_exception(e):
