@@ -29,13 +29,17 @@ class Config(object):
 
 def create_app():
     app = Flask(__name__, instance_relative_config=False)
+    app.config.update(dict(
+        HOST='localhost',
+        PORT='80'
+    ))
+
+    g.config = 'test_context'
 
     with app.app_context():
         # Include our Routes
         from . import routes
-        config = Config(configFile='/config/config.yaml')
-        g.config = config
 
-        assert g.config == config
+        g.config = 'test'
 
         return app
