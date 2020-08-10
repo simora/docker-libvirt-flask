@@ -18,5 +18,5 @@ def hello():
 
 @app.route("/info")
 def info():
-    if len(AppConfig.hosts) > 0:
+    if len(g.config.hosts) > 0:
         return f"<h1 style='color:blue'>Name: {g.config.hosts[0]['name']}</h1>"
