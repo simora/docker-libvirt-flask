@@ -18,5 +18,4 @@ def hello():
 
 @app.route("/info")
 def info():
-    with app.app_context():
-        return f"<h1 style='color:blue'>JSON: {json.dumps(app.config['DICT'], indent=2)}</h1>"
+    return f"<h1 style='color:blue'>JSON: {json.dumps(app.config['DICT'], indent=2)}</h1>"
