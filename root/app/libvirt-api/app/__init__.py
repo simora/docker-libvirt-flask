@@ -34,8 +34,6 @@ def create_app():
         PORT='80'
     ))
 
-    g.config = 'test_context'
-
     with app.app_context():
         # Include our Routes
         from . import routes
