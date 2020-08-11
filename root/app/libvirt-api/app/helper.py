@@ -9,7 +9,7 @@ def get_conn(uri: str, rw: bool = False):
         conn = libvirt.openReadOnly(uri)
     return conn
 def get_capabilities(conn):
-    capXML = conn.getCapabilities()
+    capsXML = conn.getCapabilities()
     return minidom.parseString(capsXML)
 
 def get_topology(host: LibvirtHost):
