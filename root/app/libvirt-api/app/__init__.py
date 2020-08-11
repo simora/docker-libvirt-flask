@@ -11,7 +11,7 @@ class LibvirtHost(dict):
         self.update(*args, **kwargs)
         if 'type' in self.keys():
             if self['type'] == 'qemu+ssh':
-                self['uri'] = f"{self['type']}://{self['username']}@{self['address']}/system?keyfile=/config/key/id_rsa.pub"
+                self['uri'] = f"{self['type']}://{self['username']}@{self['address']}/system?keyfile=/config/key/id_rsa"
             elif self['type'] == 'socket':
                 self['uri'] = None
     @classmethod
