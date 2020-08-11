@@ -19,5 +19,4 @@ def hello():
 def info():
     for host in app.config['hosts']:
         response, code = get_topology(host)
-        if code == 200:
-            return jsonify(response), code
+        return jsonify(response), code
