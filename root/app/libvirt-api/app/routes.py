@@ -18,4 +18,4 @@ def hello():
 
 @app.route("/info")
 def info():
-    return f"<h1 style='color:blue'>JSON: {jsonify(app.config['hosts'])}</h1>"
+    return jsonify(app.config['hosts'])
