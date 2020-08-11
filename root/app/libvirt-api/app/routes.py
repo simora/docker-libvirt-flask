@@ -1,4 +1,5 @@
 import yaml, traceback, sys, json, inspect
+import libvirt
 
 from flask import Flask, jsonify, g
 from flask import current_app as app
@@ -17,4 +18,4 @@ def hello():
 
 @app.route("/info")
 def info():
-    return f"<h1 style='color:blue'>JSON: {json.dumps(app.config['hosts'], indent=2)}</h1>"
+    return f"<h1 style='color:blue'>JSON: {jsonify(app.config['hosts'], indent=2)}</h1>"
