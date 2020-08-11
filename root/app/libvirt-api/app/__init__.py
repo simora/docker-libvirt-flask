@@ -12,7 +12,7 @@ class LibvirtHost(dict):
         if 'type' in self.keys():
             if self['type'] == 'qemu+ssh':
                 self['uri'] = f"{self['type']}://{self['username']}@{self['address']}/system?keyfile=/config/key/id_rsa.pub"
-            elif: self['type'] == 'socket':
+            elif self['type'] == 'socket':
                 self['uri'] = None
     @classmethod
     def fromdict(cls, datadict):
