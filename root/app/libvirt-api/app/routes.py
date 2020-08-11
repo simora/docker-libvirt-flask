@@ -17,6 +17,8 @@ def hello():
 
 @app.route("/info")
 def info():
+    response = []
     for host in app.config['hosts']:
-        response, code = get_topology(host)
-        return jsonify(response), code
+        retVal, code = get_topology(host)
+        response.append({"Return": retVal, "Code": code})
+    return jsonify(response), 200

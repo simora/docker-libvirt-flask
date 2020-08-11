@@ -9,8 +9,11 @@ class LibvirtHost(dict):
             config = kwargs.pop('config')
             self.update(config)
         self.update(*args, **kwargs)
-        if 'type' in self.keys() and self['type'] == 'qemu+ssh':
-            self['uri'] = f"{self['type']}://{self['username']}@{self['address']}/system?keyfile=/config/key/id_rsa.pub"
+        if 'type' in self.keys():
+            if self['type'] == 'qemu+ssh':
+                self['uri'] = f"{self['type']}://{self['username']}@{self['address']}/system?keyfile=/config/key/id_rsa.pub"
+            elif: self['type'] == 'socket':
+                self['uri'] = None
     @classmethod
     def fromdict(cls, datadict):
         return cls(datadict.items())
