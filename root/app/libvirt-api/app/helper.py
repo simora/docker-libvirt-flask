@@ -1,5 +1,5 @@
 import libvirt
-import LibvirtHost
+from . import LibvirtHost
 from xml.dom import minidom
 
 def get_conn(uri: str, rw: bool = False):
