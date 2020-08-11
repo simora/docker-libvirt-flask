@@ -22,3 +22,11 @@ def info():
         retVal, code = get_topology(host)
         response.append({"Return": retVal, "Code": code})
     return jsonify(response), 200
+
+@app.route("/list")
+def list():
+    response = []
+    for host in app.config['hosts']:
+        retVal, code = get_domains(host)
+        response.append({"Host": host['name'], "Domains": retVal})
+    return jsonify(response), 200

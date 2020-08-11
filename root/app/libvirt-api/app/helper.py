@@ -47,3 +47,22 @@ def get_topology(host: LibvirtHost):
         "Threads": total_cpus
     }
     return response, 200
+
+def get_domains(host: LibvirtHost):
+    try:
+        conn = get_conn(host['uri'])
+    except:
+        return f"Failed to connect to host {host['name']}", 500
+    getdomResult = {
+        'running': [],
+        'not running': []
+    }
+    domains = conn.listAllDomains(0)
+    if len(domains) != 0:
+        for dom in domains:
+            state, reason = dom.state()
+            if state == libvirt.VIR_DOMAIN_RUNNING:
+                getdomResult['running'].append(dom.name())
+            else:
+                getdomResult['not running'].append(dom.name())
+    return getdomResult, 200
