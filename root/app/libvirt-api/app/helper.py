@@ -4,9 +4,10 @@ from xml.dom import minidom
 
 def get_conn(uri: str, rw: bool = False):
     if rw:
-        return conn = libvirt.open(uri)
+        conn = libvirt.open(uri)
     else:
-        return conn = libvirt.openReadOnly(uri)
+        conn = libvirt.openReadOnly(uri)
+    return conn
 def get_capabilities(conn):
     capXML = conn.getCapabilities()
     return minidom.parseString(capsXML)
