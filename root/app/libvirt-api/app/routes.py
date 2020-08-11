@@ -1,6 +1,5 @@
 import yaml, traceback, sys, json, inspect
-import libvirt
-
+import helper
 from flask import Flask, jsonify, g
 from flask import current_app as app
 
@@ -18,4 +17,7 @@ def hello():
 
 @app.route("/info")
 def info():
-    return jsonify(app.config['hosts'])
+    for host in app.config['hosts']:
+        response, code = get_topology(host)
+        if code == 200:
+            return jsonify(response), code
