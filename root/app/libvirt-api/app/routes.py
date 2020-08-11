@@ -1,5 +1,5 @@
 import yaml, traceback, sys, json, inspect
-import .helper
+from . import helper
 from flask import Flask, jsonify, g
 from flask import current_app as app
 
