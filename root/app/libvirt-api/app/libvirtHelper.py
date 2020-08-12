@@ -109,25 +109,6 @@ def get_domains(host: LibvirtHost):
                 getdomResult['not running'].append({'Name': dom.name(), 'UUID': dom.UUIDString()})
     return getdomResult, 200
 
-def get_domains(host: LibvirtHost):
-    try:
-        conn = get_conn(host['uri'])
-    except:
-        return f"Failed to connect to host {host['name']}", 500
-    getdomResult = {
-        'running': [],
-        'not running': []
-    }
-    domains = conn.listAllDomains(0)
-    if len(domains) != 0:
-        for dom in domains:
-            state, reason = dom.state()
-            if state == libvirt.VIR_DOMAIN_RUNNING:
-                getdomResult['running'].append({'Name': dom.name(), 'UUID': dom.UUIDString()})
-            else:
-                getdomResult['not running'].append({'Name': dom.name(), 'UUID': dom.UUIDString()})
-    return getdomResult, 200
-
 def get_domain(host: LibvirtHost, uuid: str):
     try:
         conn = get_conn(host['uri'])

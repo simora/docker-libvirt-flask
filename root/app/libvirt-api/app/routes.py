@@ -48,6 +48,6 @@ def domain_get(hostUUID: str, domUUID: str):
     response = []
     host = next((i for i in app.config['hosts'] if 'UUID' in i.keys() and i['UUID'] == hostUUID), None)
     if host != None:
-        response, code = get_domain(hostUUID, domUUID)
+        response, code = get_domain(host, domUUID)
         return jsonify(response), code
     return 500
