@@ -19,7 +19,7 @@ def hello():
 def info():
     response = []
     for host in app.config['hosts']:
-        if 'uuid' not in host.keys():
+        if 'UUID' not in host.keys():
             retVal, code = get_topology(host)
             response.append({"Return": retVal, "Code": code})
         else:
