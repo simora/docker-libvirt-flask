@@ -19,8 +19,11 @@ def hello():
 def info():
     response = []
     for host in app.config['hosts']:
-        retVal, code = get_topology(host)
-        response.append({"Return": retVal, "Code": code})
+        if 'uuid' not in host.keys():
+            retVal, code = get_topology(host)
+            response.append({"Return": retVal, "Code": code})
+        else:
+            response.append({"Cached": host})
     return jsonify(response), 200
 
 @app.route("/list")
