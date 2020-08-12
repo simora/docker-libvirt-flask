@@ -34,20 +34,20 @@ def list():
         response.append({"Host": host['name'], "Domains": retVal})
     return jsonify(response), 200
 
-@app.route('/host/<string:uuid>')
-def host_get(uuid: str):
+@app.route('/host/<string:hostUUID>')
+def host_get(hostUUID: str):
     response = []
-    host = next((i for i in app.config['hosts'] if 'UUID' in i.keys() and i['UUID'] == uuid), None)
+    host = next((i for i in app.config['hosts'] if 'UUID' in i.keys() and i['UUID'] == hostUUID), None)
     if host != None:
         response, code = get_domains(host)
         return jsonify(response), code
     return 500
 
-@app.route('/host/<int:id>/domain/<string:uuid>')
-def domain_get(id: int, uuid: str):
+@app.route('/host/<string:hostUUID>/domain/<string:domUUID>')
+def domain_get(hostUUID: str, domUUID: str):
     response = []
-    host = app.config['hosts'][id] if id < len(app.config['hosts']) else None
+    host = next((i for i in app.config['hosts'] if 'UUID' in i.keys() and i['UUID'] == hostUUID), None)
     if host != None:
-        response, code = get_domain(host, uuid)
+        response, code = get_domain(hostUUID, domUUID)
         return jsonify(response), code
     return 500
