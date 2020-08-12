@@ -97,7 +97,7 @@ def get_domains(host: LibvirtHost):
                 getdomResult['not running'].append({'Name': dom.name(), 'UUID': dom.UUIDString()})
     return getdomResult, 200
 
-def get_domain(host: LibvirtHost, str: uuid):
+def get_domain(host: LibvirtHost, uuid: str):
     try:
         conn = get_conn(host['uri'])
     except:
