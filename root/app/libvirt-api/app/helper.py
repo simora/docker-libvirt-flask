@@ -24,7 +24,7 @@ def get_topology(host: LibvirtHost):
 
     host = caps.getElementsByTagName('host')[0]
     cells = host.getElementsByTagName('cells')[0]
-    uuid = str(host.getElementsByTagName('uuid')[0])
+    uuid = host.getElementsByTagName('uuid')[0].firstChild.nodeValue
     total_cpus = cells.getElementsByTagName('cpu').length
 
     socketIds = []
