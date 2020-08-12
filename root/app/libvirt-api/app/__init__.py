@@ -1,7 +1,4 @@
-import yaml, traceback, sys, json, inspect
-
-from typing import Dict
-from flask import Flask, Config, jsonify
+from flask import Flask
 from .libvirtHelper import *
 
 def create_app():
