@@ -23,9 +23,8 @@ def get_topology(host: LibvirtHost):
         return f"Failed to request capabilities for host {host['name']}", 500
 
     host = caps.getElementsByTagName('host')[0]
-    print(host.toprettyxml())
     cells = host.getElementsByTagName('cells')[0]
-    uuid = host.getAttribute('uuid')
+    uuid = host.getElementsByTagName('uuid')[0]
     total_cpus = cells.getElementsByTagName('cpu').length
 
     socketIds = []
