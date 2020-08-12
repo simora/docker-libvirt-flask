@@ -38,6 +38,7 @@ def domain():
     if host != None:
         response, code = get_domains(host)
         return jsonify(response), code
+    return 500
 
 @app.route("/host/<int: id>/domain/<str: uuid>")
 def domain():
@@ -46,3 +47,4 @@ def domain():
     if host != None:
         response, code = get_domain(host, uuid)
         return jsonify(response), code
+    return 500
