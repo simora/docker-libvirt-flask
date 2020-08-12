@@ -1,5 +1,6 @@
 import libvirt
 from xml.dom import minidom
+from flask import Config
 
 class LibvirtHost(dict):
     def __init__(self, *args, **kwargs):
