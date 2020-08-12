@@ -32,7 +32,7 @@ def list():
     return jsonify(response), 200
 
 @app.route('/host/<int:id>')
-def domain(id: int):
+def host_get(id: int):
     response = []
     host = app.config['hosts'][id] if id < len(app.config['hosts']) else None
     if host != None:
@@ -41,7 +41,7 @@ def domain(id: int):
     return 500
 
 @app.route('/host/<int:id>/domain/<string:uuid>')
-def domain(id: int, uuid: str):
+def domain_get(id: int, uuid: str):
     response = []
     host = app.config['hosts'][id] if id < len(app.config['hosts']) else None
     if host != None:
