@@ -37,7 +37,7 @@ def list():
 @app.route('/host/<string:uuid>')
 def host_get(uuid: str):
     response = []
-    host = next((i for i in app.config['hosts'] if 'UUID' in i.keys() and i['UUID'] == uuid), or None)
+    host = next((i for i in app.config['hosts'] if 'UUID' in i.keys() and i['UUID'] == uuid), None)
     if host != None:
         response, code = get_domains(host)
         return jsonify(response), code
