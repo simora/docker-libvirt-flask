@@ -24,6 +24,7 @@ def get_topology(host: LibvirtHost):
 
     host = caps.getElementsByTagName('host')[0]
     cells = host.getElementsByTagName('cells')[0]
+    uuid = host.getElementsByTagName('uuid')
     total_cpus = cells.getElementsByTagName('cpu').length
 
     socketIds = []
@@ -44,9 +45,38 @@ def get_topology(host: LibvirtHost):
         "NUMA nodes": cells.getAttribute('num'),
         "Sockets": len(set(socketIds)),
         "Cores": len(set(siblingsIds)),
-        "Threads": total_cpus
+        "Threads": total_cpus,
+        "UUID" : uuid
     }
     return response, 200
+
+def get_domains(host: LibvirtHost):
+    try:
+        conn = get_conn(host['uri'])
+    except:
+        return f"Failed to connect to host {host['name']}", 500
+    try:
+        caps = get_capabilities(conn)
+    except libvirt.libvirtError:
+        return f"Failed to request capabilities for host {host['name']}", 500
+
+    host = caps.getElementsByTagName('host')[0]
+    uuid = host.getElementsByTagName('uuid')
+
+    getdomResult = {
+        'host': uuid,
+        'running': [],
+        'not running': []
+    }
+    domains = conn.listAllDomains(0)
+    if len(domains) != 0:
+        for dom in domains:
+            state, reason = dom.state()
+            if state == libvirt.VIR_DOMAIN_RUNNING:
+                getdomResult['running'].append({'Name': dom.name(), 'UUID': dom.UUIDString()})
+            else:
+                getdomResult['not running'].append({'Name': dom.name(), 'UUID': dom.UUIDString()})
+    return getdomResult, 200
 
 def get_domains(host: LibvirtHost):
     try:
@@ -62,7 +92,24 @@ def get_domains(host: LibvirtHost):
         for dom in domains:
             state, reason = dom.state()
             if state == libvirt.VIR_DOMAIN_RUNNING:
-                getdomResult['running'].append(dom.name())
+                getdomResult['running'].append({'Name': dom.name(), 'UUID': dom.UUIDString()})
             else:
-                getdomResult['not running'].append(dom.name())
+                getdomResult['not running'].append({'Name': dom.name(), 'UUID': dom.UUIDString()})
+    return getdomResult, 200
+
+def get_domain(host: LibvirtHost, str: uuid):
+    try:
+        conn = get_conn(host['uri'])
+    except:
+        return f"Failed to connect to host {host['name']}", 500
+    getdomResult = {}
+    dom = conn.lookupByUUID(uuid)
+    if dom == None:
+        return f"Failed to get domain {uuid}", 500
+    getdomResult['name'] = dom.name()
+    domState = dom.state()
+    if domState == libvirt.VIR_DOMAIN_RUNNING:
+        getdomResult['state'] = 'running'
+    else:
+        getdomResult['state'] = 'not_running'
     return getdomResult, 200

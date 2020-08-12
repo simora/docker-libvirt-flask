@@ -30,3 +30,19 @@ def list():
         retVal, code = get_domains(host)
         response.append({"Host": host['name'], "Domains": retVal})
     return jsonify(response), 200
+
+@app.route("/host/<int: id>")
+def domain():
+    response = []
+    host = app.config['hosts'][id] if id < len(app.config['hosts']) else None
+    if host != None:
+        response, code = get_domains(host)
+        return jsonify(response), code
+
+@app.route("/host/<int: id>/domain/<str: uuid>")
+def domain():
+    response = []
+    host = app.config['hosts'][id] if id < len(app.config['hosts']) else None
+    if host != None:
+        response, code = get_domain(host, uuid)
+        return jsonify(response), code
