@@ -86,16 +86,8 @@ def get_domains(host: LibvirtHost):
         conn = get_conn(host['uri'])
     except:
         return f"Failed to connect to host {host['name']}", 500
-    try:
-        caps = get_capabilities(conn)
-    except libvirt.libvirtError:
-        return f"Failed to request capabilities for host {host['name']}", 500
-
-    host = caps.getElementsByTagName('host')[0]
-    uuid = host.getElementsByTagName('uuid')
 
     getdomResult = {
-        'host': uuid,
         'running': [],
         'not running': []
     }
