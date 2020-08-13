@@ -107,7 +107,7 @@ def get_domain(host: LibvirtHost, uuid: str):
     except:
         return f"Failed to connect to host {host['name']}", 500
     getdomResult = {}
-    dom = conn.lookupByUUID(uuid)
+    dom = conn.lookupByUUID('e32695a3-3364-008f-9b4a-26a3da2b0470')
     if dom == None:
         return f"Failed to get domain {uuid}", 500
     getdomResult['name'] = dom.name()

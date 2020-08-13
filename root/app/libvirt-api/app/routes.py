@@ -45,7 +45,6 @@ def host_get(hostUUID: str):
 
 @app.route('/host/<string:hostUUID>/domain/<string:domUUID>')
 def domain_get(hostUUID: str, domUUID: str):
-    response = []
     host = next((i for i in app.config['hosts'] if 'UUID' in i.keys() and i['UUID'] == hostUUID), None)
     if host != None:
         response, code = get_domain(host, domUUID)
