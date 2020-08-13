@@ -103,7 +103,7 @@ def get_domains(host: LibvirtHost):
 
 def get_domain(host: LibvirtHost, uuid: str):
     try:
-        conn = get_conn(host['uri'])
+        conn = get_conn(host['uri'], rw = True)
     except:
         return f"Failed to connect to host {host['name']}", 500
     getdomResult = {}
