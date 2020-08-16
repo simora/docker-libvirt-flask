@@ -26,7 +26,7 @@ def info():
     return jsonify(response), 200
 
 @app.route("/list")
-def list():
+def list_get():
     response = []
     for host in app.config['hosts']:
         retVal = get_domains(host)
