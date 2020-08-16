@@ -30,7 +30,7 @@ def list():
     response = []
     for host in app.config['hosts']:
         retVal = get_domains(host)
-        if isinstance(retVal, list):
+        if isinstance(retVal, type(list)):
             response.append({"Host": host['name'], "Domains": retVal})
     return jsonify(response), 200
 
@@ -45,7 +45,7 @@ def dom_get():
             response = f"No host {request.args.get('host')}"
     else:
         response = 'JSON is invalid or missing keys'
-    if isinstance(response, dict):
+    if isinstance(response, type(dict)):
         return jsonify(response), 200
     else:
         return jsonify(response), 500
