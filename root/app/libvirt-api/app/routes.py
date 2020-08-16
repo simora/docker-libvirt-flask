@@ -36,18 +36,15 @@ def list():
 
 @app.route('/dom/', methods = ['GET'])
 def dom_get():
-    content = request.json
-    if content != None:
-        if all(key in content.keys() for dom_key in DOMAIN_KEYS_GET):
-            host = next((i for i in app.config['hosts'] if 'name' in i.keys() and i['name'] == content['host']), None)
-            if host != None:
-                response = get_domain(host, content['name'])
-            else:
-                response = f"No host {content['host']}"
+    reponse = None
+    if all(arg in request.args for dom_key in DOMAIN_KEYS_GET):
+        host = next((i for i in app.config['hosts'] if 'name' in i.keys() and i['name'] == request.args.get('host')), None)
+        if host != None:
+            response = get_domain(host, request.args.get('name'))
         else:
-            response = 'JSON is invalid or missing keys'
+            response = f"No host {request.args.get('host')}"
     else:
-        response = 'JSON not supplied or invalid'
+        response = 'JSON is invalid or missing keys'
     if isinstance(response, dict):
         return jsonify(response), 200
     else:
