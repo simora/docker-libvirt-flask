@@ -32,6 +32,8 @@ def list_get():
         retVal = get_domains(host)
         if isinstance(retVal, type(list)):
             response.append({"Host": host['name'], "Domains": retVal})
+        else:
+            return jsonify(retVal), 500
     return jsonify(response), 200
 
 @app.route('/dom/', methods = ['GET'])
