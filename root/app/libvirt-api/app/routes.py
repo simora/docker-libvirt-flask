@@ -30,7 +30,7 @@ def list_get():
     response = []
     for host in app.config['hosts']:
         retVal = get_domains(host)
-        if isinstance(retVal, type(list)):
+        if isinstance(retVal, type([])):
             response.append({"Host": host['name'], "Domains": retVal})
         else:
             return jsonify(retVal), 500
