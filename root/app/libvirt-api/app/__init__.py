@@ -7,7 +7,7 @@ def create_app():
     app.config.from_yaml(configFile='/config/config.yaml')
     for i, host in enumerate(app.config['hosts']):
         topology = get_topology(host)
-        if isinstance(topology, type(dict)):
+        if isinstance(topology, dict):
             app.config['hosts'][i].update(topology)
 
     with app.app_context():
