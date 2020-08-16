@@ -6,8 +6,8 @@ def create_app():
     app = Flask(__name__, instance_relative_config=False)
     app.config.from_yaml(configFile='/config/config.yaml')
     for i, host in enumerate(app.config['hosts']):
-        topology, code = get_topology(host)
-        if code == 200:
+        topology = get_topology(host)
+        if isinstance(topology, dict):
             app.config['hosts'][i].update(topology)
 
     with app.app_context():
