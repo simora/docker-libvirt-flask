@@ -39,7 +39,7 @@ def list_get():
 @app.route('/dom/', methods = ['GET'])
 def dom_get():
     reponse = None
-    if all(arg in request.args for dom_key in DOMAIN_KEYS_GET):
+    if all(arg in request.args for arg in DOMAIN_KEYS_GET):
         host = next((i for i in app.config['hosts'] if 'name' in i.keys() and i['name'] == request.args.get('host')), None)
         if host != None:
             response = get_domain(host, request.args.get('name'))
@@ -57,7 +57,7 @@ def dom_put():
     content = request.json
     response = None
     if content != None:
-        if all(key in content.keys() for dom_key in DOMAIN_KEYS_PUT):
+        if all(key in content.keys() for key in DOMAIN_KEYS_PUT):
             host = next((i for i in app.config['hosts'] if 'name' in i.keys() and i['name'] == content['host']), None)
             retVal = set_domain(host, content['name'], content['state'])
             if retVal:
