@@ -117,4 +117,32 @@ def get_domain(host: LibvirtHost, name: str):
     return getdomResult
 
 def set_domain(host: LibvirtHost, name: str, state: int):
-    return "Not yet implemented"
+    try:
+        conn = get_conn(host['uri'])
+    except:
+        return f"Failed to connect to host {host['name']}"
+    dom = conn.lookupByName(name)
+    if dom == None:
+        return f"Failed to get domain {name}"
+    domState = dom.state()
+    if domState == libvirt.VIR_DOMAIN_RUNNING:
+        curState = 1
+    else:
+        curState = 0
+    if state == curState:
+        return {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState}
+    else:
+        if curState == 0 and state == 1:
+            if dom.create(dom) < 0:
+                return f"Failed to start domain {name}"
+        elif curState == 1 and state == 0:
+            dom.shutdown(dom)
+    domState = dom.state()
+    if domState == libvirt.VIR_DOMAIN_RUNNING:
+        curState = 1
+    else:
+        curState = 0
+    if state == curState:
+        return {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState}
+    else:
+        return f"Failed to set state of domain {name}"

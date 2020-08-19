@@ -52,7 +52,7 @@ def dom_get():
     else:
         return jsonify(response), 500
 
-@app.route('/dom/', methods = ['PUT'])
+@app.route('/dom/', methods = ['PUT', 'POST', 'PATCH'])
 def dom_put():
     content = request.json
     response = None
