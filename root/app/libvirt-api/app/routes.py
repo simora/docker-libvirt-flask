@@ -1,6 +1,6 @@
 import yaml, traceback, sys, json, inspect
 from .libvirtHelper import *
-from flask import Flask, jsonify, g
+from flask import Flask, jsonify, g, request
 from flask import current_app as app
 
 DOMAIN_KEYS_PUT = ['name', 'state', 'host']
