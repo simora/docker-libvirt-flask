@@ -118,7 +118,7 @@ def get_domain(host: LibvirtHost, name: str):
 
 def set_domain(host: LibvirtHost, name: str, state: int):
     try:
-        conn = get_conn(host['uri'])
+        conn = get_conn(host['uri'], rw = True)
     except:
         return f"Failed to connect to host {host['name']}"
     dom = conn.lookupByName(name)
