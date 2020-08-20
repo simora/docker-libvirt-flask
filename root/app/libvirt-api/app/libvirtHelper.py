@@ -133,6 +133,7 @@ def set_domain(host: LibvirtHost, name: str, state: int):
         return {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState}
     else:
         if curState == 0 and state == 1:
+            print(f"Starting domain {dom.name()}")
             if dom.create() < 0:
                 return f"Failed to start domain {name}"
         elif curState == 1 and state == 0:
