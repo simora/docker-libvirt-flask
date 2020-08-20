@@ -61,7 +61,7 @@ def dom_put():
         if all(key in content.keys() for key in DOMAIN_KEYS_PUT):
             host = next((i for i in app.config['hosts'] if 'name' in i.keys() and i['name'] == content['host']), None)
             retVal = set_domain(host, content['name'], content['state'])
-            if isinstance(retVal, type({}})):
+            if isinstance(retVal, type({})):
                 return jsonify(f"Successfully set state of domain '{content['name']}' on host '{content['host']}' to state {content['state']}"), 200
             else:
                 return jsonify(f"Failed to set state of domain '{content['name']}' on host '{content['host']}' to state {content['state']} with message '{retVal}'"), 500
