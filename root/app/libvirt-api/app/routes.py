@@ -64,7 +64,7 @@ def dom_put():
             if isinstance(retVal, type(dict)):
                 return jsonify(f"Successfully set state of domain '{content['name']}' on host '{content['host']}' to state {content['state']}"), 200
             else:
-                return jsonify(f"Failed to set state of domain '{content['name']}' on host '{content['host']}' to state {content['state']} with message '{retval}'"), 500
+                return jsonify(f"Failed to set state of domain '{content['name']}' on host '{content['host']}' to state {content['state']} with message '{retVal}'"), 500
         else:
             response = 'JSON is invalid or missing keys'
     else:
