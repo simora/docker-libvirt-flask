@@ -57,7 +57,6 @@ def dom_put():
     content = request.json
     response = None
     if content != None:
-        print(json.dumps(content, indent=2))
         if all(key in content.keys() for key in DOMAIN_KEYS_PUT):
             host = next((i for i in app.config['hosts'] if 'name' in i.keys() and i['name'] == content['host']), None)
             retVal = set_domain(host, content['name'], content['state'])
