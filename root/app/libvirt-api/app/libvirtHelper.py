@@ -33,6 +33,11 @@ class LibvirtConfig(Config):
             else:
                 self[key] = value
 
+def clean_and_return(conn, retVal):
+    if conn is not None:
+        conn.close()
+    return retVal
+
 def get_conn(uri: str, rw: bool = False):
     if rw:
         conn = libvirt.open(uri)
@@ -51,7 +56,7 @@ def get_topology(host: LibvirtHost):
     try:
         caps = get_capabilities(conn)
     except libvirt.libvirtError:
-        return f"Failed to request capabilities for host {host['name']}"
+        clean_and_return(conn, f"Failed to request capabilities for host {host['name']}")
 
     host = caps.getElementsByTagName('host')[0]
     cells = host.getElementsByTagName('cells')[0]
@@ -79,7 +84,7 @@ def get_topology(host: LibvirtHost):
         "Threads": total_cpus,
         "UUID" : uuid
     }
-    return response
+    clean_and_return(conn, response)
 
 def get_domains(host: LibvirtHost):
     try:
@@ -97,7 +102,7 @@ def get_domains(host: LibvirtHost):
                 getDomResult.append({'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': 1})
             else:
                 getDomResult.append({'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': 0})
-    return getDomResult
+    clean_and_return(conn, getDomResult)
 
 def get_domain(host: LibvirtHost, name: str):
     try:
@@ -107,14 +112,14 @@ def get_domain(host: LibvirtHost, name: str):
     getdomResult = None
     dom = conn.lookupByName(name)
     if dom == None:
-        return f"Failed to get domain {name}"
+        clean_and_return(conn, f"Failed to get domain {name}")
     getdomResult['name'] = dom.name()
     domState = dom.state()
     if domState == libvirt.VIR_DOMAIN_RUNNING:
         getdomResult['state'] = 1
     else:
         getdomResult['state'] = 0
-    return getdomResult
+    clean_and_return(conn, getdomResult)
 
 def set_domain(host: LibvirtHost, name: str, state: int):
     try:
@@ -122,28 +127,29 @@ def set_domain(host: LibvirtHost, name: str, state: int):
     except:
         return f"Failed to connect to host {host['name']}"
     dom = conn.lookupByName(name)
+    retVal = None
     if dom == None:
-        return f"Failed to get domain {name}"
+        clean_and_return(conn, f"Failed to get domain {name}")
     domState = dom.state()
     if domState == libvirt.VIR_DOMAIN_RUNNING:
         curState = 1
     else:
         curState = 0
     if state == curState:
-        return {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState}
+        clean_and_return(conn, {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState})
     else:
         if curState == 0 and state == 1:
             if dom.create() < 0:
-                return f"Failed to start domain {name}"
+                clean_and_return(conn, f"Failed to start domain {name}")
         elif curState == 1 and state == 0:
             if dom.destroy() < 0:
-                return f"Failed to stop domain {name}"
+                clean_and_return(conn, f"Failed to stop domain {name}")
     domState = dom.state()
     if domState == libvirt.VIR_DOMAIN_RUNNING:
         curState = 1
     else:
         curState = 0
     if state == curState:
-        return {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState}
+        clean_and_return(conn, {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState})
     else:
-        return f"Failed to set state of domain {name}"
+        clean_and_return(conn, f"Failed to set state of domain {name}")
