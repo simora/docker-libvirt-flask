@@ -136,7 +136,9 @@ def set_domain(host: LibvirtHost, name: str, state: int):
             if dom.create() < 0:
                 return f"Failed to start domain {name}"
         elif curState == 1 and state == 0:
-            dom.shutdown()
+            print(f"Destroying domain {dom.name()}")
+            if dom.destroy() < 0:
+                return f"Failed to stop domain {name}"
     domState = dom.state()
     if domState == libvirt.VIR_DOMAIN_RUNNING:
         curState = 1
