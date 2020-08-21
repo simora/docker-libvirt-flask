@@ -2,10 +2,8 @@ import yaml, traceback, sys, json, inspect, asyncio, os
 import libvirt
 
 from contextlib import AsyncExitStack, asynccontextmanager
-from random import randrange
 from asyncio_mqtt import Client, MqttError
 from typing import Dict
-from xml.dom import minidom
 from slugify import slugify
 
 MQTT_HOST = os.getenv('MQTT_HOST')
