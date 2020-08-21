@@ -3,5 +3,4 @@ lxml
 pyyaml
 asyncio_mqtt
 contextlib
-random
 python-slugify
