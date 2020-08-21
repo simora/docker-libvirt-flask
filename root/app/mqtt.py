@@ -194,9 +194,5 @@ async def update_listener(client, conn, dom, messages):
 async def state_listener():
     pass
 
-def format_state_publish(dom):
-    # Format the state of the domain as a string
-    return None
-
 if __name__ == '__main__':
     asyncio.run(main())
