@@ -1,9 +1,14 @@
-import yaml, traceback, sys, json, inspect
+import yaml, traceback, sys, json, inspect, asyncio
 import libvirt
 
+from contextlib import AsyncExitStack, asynccontextmanager
+from random import randrange
+from asyncio_mqtt import Client, MqttError
 from typing import Dict
 from xml.dom import minidom
-from flask import Config
+
+ANNOUNCE_INTERVAL = 300
+STATE_PUBLISH_INTERVAL = 60
 
 class LibvirtHost(dict):
     def __init__(self, *args, **kwargs):
@@ -17,26 +22,21 @@ class LibvirtHost(dict):
             elif self['type'] == 'socket':
                 self['uri'] = None
     @classmethod
-    def fromdict(cls, datadict):
+    def from_dict(cls, datadict):
         return cls(datadict.items())
 
-class LibvirtConfig(Config):
+class LibvirtConfig(dict):
     def from_yaml(self, configFile: str):
         with open(configFile) as file:
             self.rawConfig = yaml.load(file, Loader=yaml.FullLoader)
         for key, value in self.rawConfig.items():
-            if key.lower() == 'hosts' and len(value) > 0:
+            if key.lower() == 'libvirt_hosts' and len(value) > 0:
                 for host in value:
                     if 'hosts' not in self.keys():
                         self['hosts'] = []
-                    self['hosts'].append(LibvirtHost.fromdict(host))
+                    self['hosts'].append(LibvirtHost.from_dict(host))
             else:
                 self[key] = value
-
-def clean_and_return(conn, retVal):
-    if conn is not None:
-        conn.close()
-    return retVal
 
 def get_conn(uri: str, rw: bool = False):
     if rw:
@@ -44,6 +44,7 @@ def get_conn(uri: str, rw: bool = False):
     else:
         conn = libvirt.openReadOnly(uri)
     return conn
+
 def get_capabilities(conn):
     capsXML = conn.getCapabilities()
     return minidom.parseString(capsXML)
@@ -153,3 +154,80 @@ def set_domain(host: LibvirtHost, name: str, state: int):
         clean_and_return(conn, {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState})
     else:
         clean_and_return(conn, f"Failed to set state of domain {name}")
+
+async def main():
+    reconnect_interval = 3  # [seconds]
+    config = LibvirtConfig().from_yaml("/config/config.yaml")
+    while True:
+        try:
+            await mqtt_client(config)
+        except MqttError as error:
+            print(f'Error "{error}". Reconnecting in {reconnect_interval} seconds.')
+        finally:
+            await asyncio.sleep(reconnect_interval)
+
+async def mqtt_client(config: LibvirtConfig):
+    async with AsyncExitStack() as stack:
+        # Keep track of the asyncio tasks that we create, so that
+        # we can cancel them on exit
+        tasks = set()
+        stack.push_async_callback(cancel_tasks, tasks)
+
+        # Connect to the MQTT broker
+        client = Client(config['mqtt_host'])
+        await stack.enter_async_context(client)
+
+
+        """
+        # You can create any number of topic filters
+        topic_filters = (
+            "floors/+/humidity",
+            "floors/rooftop/#"
+            # 👉 Try to add more filters!
+        )
+        for topic_filter in topic_filters:
+            # Log all messages that matches the filter
+            manager = client.filtered_messages(topic_filter)
+            messages = await stack.enter_async_context(manager)
+            template = f'[topic_filter="{topic_filter}"] {{}}'
+            task = asyncio.create_task(log_messages(messages, template))
+            tasks.add(task)
+
+        # Messages that doesn't match a filter will get logged here
+        messages = await stack.enter_async_context(client.unfiltered_messages())
+        task = asyncio.create_task(log_messages(messages, "[unfiltered] {}"))
+        tasks.add(task)
+
+        # Subscribe to topic(s)
+        # 🤔 Note that we subscribe *after* starting the message
+        # loggers. Otherwise, we may miss retained messages.
+        await client.subscribe("floors/#")
+
+        # Publish a random value to each of these topics
+        topics = (
+            "floors/basement/humidity",
+            "floors/rooftop/humidity",
+            "floors/rooftop/illuminance",
+            # 👉 Try to add more topics!
+        )
+        task = asyncio.create_task(post_to_topics(client, topics))
+        tasks.add(task)
+        """
+        # Wait for everything to complete (or fail due to, e.g., network
+        # errors)
+        await asyncio.gather(*tasks)
+
+async def announce():
+    pass
+
+async def state_publish():
+    pass
+
+async def update_listener():
+    pass
+
+async def state_listener():
+    pass
+
+if __name__ == '__main__':
+    asyncio.run(main())

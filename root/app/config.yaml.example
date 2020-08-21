@@ -1,1 +1,5 @@
-api_key: 'abcdef123456'
+mqtt_host: localhost
+mqtt_port: 1883
+libvirt_hosts:
+ - name: localhost
+   type: socket

@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bash
+
+echo "Starting MQTT service Server."
+
+cd /app/
+
+exec \
+  python3 mqtt.py
