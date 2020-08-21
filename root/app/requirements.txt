@@ -2,5 +2,4 @@ libvirt-python
 lxml
 pyyaml
 asyncio_mqtt
-contextlib
 python-slugify
