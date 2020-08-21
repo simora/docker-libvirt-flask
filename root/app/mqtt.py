@@ -139,7 +139,7 @@ async def mqtt_client(config: LibvirtConfig):
             if conn is None:
                 continue
             domains = get_domains(conn)
-            if domains is not None:
+            if domains is None:
                 continue
             connections.append(conn)
             for dom in domains:
