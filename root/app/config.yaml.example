@@ -1,5 +1,3 @@
-mqtt_host: localhost
-mqtt_port: 1883
-libvirt_hosts:
+hosts:
  - name: localhost
    type: socket

@@ -1,4 +1,4 @@
-import yaml, traceback, sys, json, inspect, asyncio
+import yaml, traceback, sys, json, inspect, asyncio, os
 import libvirt
 
 from contextlib import AsyncExitStack, asynccontextmanager
@@ -6,7 +6,15 @@ from random import randrange
 from asyncio_mqtt import Client, MqttError
 from typing import Dict
 from xml.dom import minidom
+from slugify import slugify
 
+MQTT_HOST = os.getenv('MQTT_HOST')
+MQTT_PORT = os.getenv('MQTT_PORT') if os.getenv('MQTT_PORT') is not None else 1883
+MQTT_USERNAME = os.getenv('MQTT_USERNAME')
+MQTT_PASSWORD = os.getenv('MQTT_PASSWORD')
+MQTT_TLS_CONTEXT = os.getenv('MQTT_TLS_CONTEXT')
+MQTT_PROTOCOL = os.getenv('MQTT_PROTOCOL')
+MQTT_CLIENT_ID = os.getenv('MQTT_CLIENT_ID')
 ANNOUNCE_INTERVAL = 300
 STATE_PUBLISH_INTERVAL = 60
 
@@ -30,7 +38,7 @@ class LibvirtConfig(dict):
         with open(configFile) as file:
             self.rawConfig = yaml.load(file, Loader=yaml.FullLoader)
         for key, value in self.rawConfig.items():
-            if key.lower() == 'libvirt_hosts' and len(value) > 0:
+            if key.lower() == 'hosts' and len(value) > 0:
                 for host in value:
                     if 'hosts' not in self.keys():
                         self['hosts'] = []
@@ -45,54 +53,7 @@ def get_conn(uri: str, rw: bool = False):
         conn = libvirt.openReadOnly(uri)
     return conn
 
-def get_capabilities(conn):
-    capsXML = conn.getCapabilities()
-    return minidom.parseString(capsXML)
-
-def get_topology(host: LibvirtHost):
-    try:
-        conn = get_conn(host['uri'])
-    except:
-        return f"Failed to connect to host {host['name']}"
-    try:
-        caps = get_capabilities(conn)
-    except libvirt.libvirtError:
-        clean_and_return(conn, f"Failed to request capabilities for host {host['name']}")
-
-    host = caps.getElementsByTagName('host')[0]
-    cells = host.getElementsByTagName('cells')[0]
-    uuid = host.getElementsByTagName('uuid')[0].firstChild.nodeValue
-    total_cpus = cells.getElementsByTagName('cpu').length
-
-    socketIds = []
-    siblingsIds = []
-
-    socketIds = [
-        proc.getAttribute('socket_id')
-        for proc in cells.getElementsByTagName('cpu')
-        if proc.getAttribute('socket_id') not in socketIds
-    ]
-
-    siblingsIds = [
-        proc.getAttribute('siblings')
-        for proc in cells.getElementsByTagName('cpu')
-        if proc.getAttribute('siblings') not in siblingsIds
-    ]
-    response = {
-        "NUMA nodes": cells.getAttribute('num'),
-        "Sockets": len(set(socketIds)),
-        "Cores": len(set(siblingsIds)),
-        "Threads": total_cpus,
-        "UUID" : uuid
-    }
-    clean_and_return(conn, response)
-
-def get_domains(host: LibvirtHost):
-    try:
-        conn = get_conn(host['uri'])
-    except:
-        return f"Failed to connect to host {host['name']}"
-
+def get_domains(conn):
     getDomResult = None
     domains = conn.listAllDomains(0)
     if len(domains) != 0:
@@ -103,57 +64,45 @@ def get_domains(host: LibvirtHost):
                 getDomResult.append({'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': 1})
             else:
                 getDomResult.append({'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': 0})
-    clean_and_return(conn, getDomResult)
+    return getDomResult
 
-def get_domain(host: LibvirtHost, name: str):
-    try:
-        conn = get_conn(host['uri'])
-    except:
-        return f"Failed to connect to host {host['name']}"
+def get_domain(conn, name: str):
     getdomResult = None
     dom = conn.lookupByName(name)
     if dom == None:
-        clean_and_return(conn, f"Failed to get domain {name}")
+        return None
     getdomResult['name'] = dom.name()
     domState = dom.state()
     if domState == libvirt.VIR_DOMAIN_RUNNING:
         getdomResult['state'] = 1
     else:
         getdomResult['state'] = 0
-    clean_and_return(conn, getdomResult)
+    return getdomResult
 
-def set_domain(host: LibvirtHost, name: str, state: int):
-    try:
-        conn = get_conn(host['uri'], rw = True)
-    except:
-        return f"Failed to connect to host {host['name']}"
+def set_domain(conn, name: str, state: int):
     dom = conn.lookupByName(name)
-    retVal = None
     if dom == None:
-        clean_and_return(conn, f"Failed to get domain {name}")
+        return None
     domState = dom.state()
     if domState == libvirt.VIR_DOMAIN_RUNNING:
         curState = 1
     else:
         curState = 0
     if state == curState:
-        clean_and_return(conn, {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState})
+        return {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState}
     else:
         if curState == 0 and state == 1:
             if dom.create() < 0:
-                clean_and_return(conn, f"Failed to start domain {name}")
+                return None
         elif curState == 1 and state == 0:
             if dom.destroy() < 0:
-                clean_and_return(conn, f"Failed to stop domain {name}")
+                return None
     domState = dom.state()
     if domState == libvirt.VIR_DOMAIN_RUNNING:
         curState = 1
     else:
         curState = 0
-    if state == curState:
-        clean_and_return(conn, {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState})
-    else:
-        clean_and_return(conn, f"Failed to set state of domain {name}")
+    return {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState}
 
 async def main():
     reconnect_interval = 3  # [seconds]
@@ -174,60 +123,82 @@ async def mqtt_client(config: LibvirtConfig):
         stack.push_async_callback(cancel_tasks, tasks)
 
         # Connect to the MQTT broker
-        client = Client(config['mqtt_host'])
+        client = Client(
+            hostname = MQTT_HOST,
+            port = MQTT_PORT,
+            username = MQTT_USERNAME,
+            password = MQTT_PASSWORD,
+            tls_context = MQTT_TLS_CONTEXT,
+            protocol = MQTT_PROTOCOL,
+            client_id = MQTT_CLIENT_ID
+        )
         await stack.enter_async_context(client)
 
+        connections = []
 
-        """
-        # You can create any number of topic filters
-        topic_filters = (
-            "floors/+/humidity",
-            "floors/rooftop/#"
-            # 👉 Try to add more filters!
-        )
-        for topic_filter in topic_filters:
-            # Log all messages that matches the filter
-            manager = client.filtered_messages(topic_filter)
-            messages = await stack.enter_async_context(manager)
-            template = f'[topic_filter="{topic_filter}"] {{}}'
-            task = asyncio.create_task(log_messages(messages, template))
-            tasks.add(task)
+        for host in config['hosts']:
+            conn = get_conn(host['uri'], rw = True)
+            if conn is None:
+                continue
+            domains = get_domains(conn)
+            if len(domains) is not None:
+                continue
+            connections.append(conn)
+            for dom in domains:
+                topic_announce = f"homeassistant/switch/{slugify(host['name'])}/{slugify(dom['Name'])}/config"
+                topic_state = f"homeassistant/switch/{slugify(host['name'])}/{slugify(dom['Name'])}/state"
+                topic_command = f"homeassistant/switch/{slugify(host['name'])}/{slugify(dom['Name'])}/set"
 
-        # Messages that doesn't match a filter will get logged here
-        messages = await stack.enter_async_context(client.unfiltered_messages())
-        task = asyncio.create_task(log_messages(messages, "[unfiltered] {}"))
-        tasks.add(task)
+                # update_listener
+                topic_filters = (
+                    topic_state
+                )
+                manager = client.filtered_messages(topic_filter)
+                messages = await stack.enter_async_context(manager)
+                task = asyncio.create_task(update_listener(client, conn, dom, messages))
+                tasks.add(task)
+                await client.subscribe(topic_state)
 
-        # Subscribe to topic(s)
-        # 🤔 Note that we subscribe *after* starting the message
-        # loggers. Otherwise, we may miss retained messages.
-        await client.subscribe("floors/#")
+                # announce
+                task = asyncio.create_task(announce(client, dom, topic_announce))
+                tasks.add(task)
 
-        # Publish a random value to each of these topics
-        topics = (
-            "floors/basement/humidity",
-            "floors/rooftop/humidity",
-            "floors/rooftop/illuminance",
-            # 👉 Try to add more topics!
-        )
-        task = asyncio.create_task(post_to_topics(client, topics))
-        tasks.add(task)
-        """
-        # Wait for everything to complete (or fail due to, e.g., network
-        # errors)
+                # state_publish
+
+                task = asyncio.create_task(state_publish(client, conn, dom, topic_announce, topic_state, topic_command))
+                tasks.add(task)
+
         await asyncio.gather(*tasks)
 
-async def announce():
-    pass
+async def announce(client, dom, topic_config, topic_state, topic_command):
+    while True:
+        message = {
+            "name": dom['Name'],
+            "command_topic": topic_command,
+            "state_topic": topic_state
+        }
+        await client.publish(topic_config, json.dumps(message), qos=1)
+        await asyncio.sleep(ANNOUNCE_INTERVAL)
 
-async def state_publish():
-    pass
+async def state_publish(client, conn, dom, topic_state):
+    while True:
+        domain = get_domain(conn, dom['Name'])
+        if domain is None:
+            raise Exception("Domain not found")
+        message = 'on' if domain['state'] == 1 else 'off'
+        await client.publish(topic_state, message, qos=1)
+        await asyncio.sleep(STATE_PUBLISH_INTERVAL)
 
-async def update_listener():
-    pass
+async def update_listener(client, conn, dom, messages):
+    async for message in messages:
+        print(f"Message for {dom['Name']} received: {message.payload.decode()}")
 
 async def state_listener():
     pass
+
+def format_state_publish(dom):
+    # Format the state of the domain as a string
+    return None
 
 if __name__ == '__main__':
     asyncio.run(main())
