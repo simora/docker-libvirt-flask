@@ -151,7 +151,7 @@ async def mqtt_client(config: LibvirtConfig):
                 topic_filters = (
                     topic_state
                 )
-                manager = client.filtered_messages(topic_filter)
+                manager = client.filtered_messages(topic_filters)
                 messages = await stack.enter_async_context(manager)
                 task = asyncio.create_task(update_listener(client, conn, dom, messages))
                 tasks.add(task)
@@ -162,7 +162,6 @@ async def mqtt_client(config: LibvirtConfig):
                 tasks.add(task)
 
                 # state_publish
-
                 task = asyncio.create_task(state_publish(client, conn, dom, topic_announce, topic_state, topic_command))
                 tasks.add(task)
 
