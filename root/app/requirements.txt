@@ -1,6 +1,6 @@
 libvirt-python
 lxml
-Flask
-gunicorn
 pyyaml
-werkzeug
+asyncio_mqtt
+contextlib
+random
