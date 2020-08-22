@@ -172,6 +172,16 @@ async def mqtt_client(config: LibvirtConfig):
                 task = asyncio.create_task(state_publish(client, conn, dom, topic_state))
                 tasks.add(task)
 
+                # state_listener
+                topic_filters = (
+                    topic_command
+                )
+                manager = client.filtered_messages(topic_filters)
+                messages = await stack.enter_async_context(manager)
+                task = asyncio.create_task(update_listener(client, conn, dom, messages))
+                tasks.add(task)
+                await client.subscribe(topic_command)
+
         await asyncio.gather(*tasks)
 
 async def announce(client, dom, topic_announce, topic_state, topic_command):
@@ -196,10 +206,11 @@ async def state_publish(client, conn, dom, topic_state):
 
 async def update_listener(client, conn, dom, messages):
     async for message in messages:
-        print(f"Message for {dom['Name']} received: {message.payload.decode()}")
+        print(f"Message for {dom['Name']} received on topic_state: {message.payload.decode()}")
 
-async def state_listener():
-    pass
+async def state_listener(client, conn, dom, messages):
+    async for message in messages:
+        print(f"Message for {dom['Name']} received on topic_command: {message.payload.decode()}")
 
 async def cancel_tasks(tasks):
     for task in tasks:
