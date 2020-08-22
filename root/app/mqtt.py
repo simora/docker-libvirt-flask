@@ -1,4 +1,4 @@
-import yaml, traceback, sys, json, inspect, asyncio, os
+import yaml, traceback, sys, json, inspect, asyncio, os, logging
 import libvirt
 
 from contextlib import AsyncExitStack, asynccontextmanager
@@ -15,6 +15,13 @@ MQTT_PROTOCOL = os.getenv('MQTT_PROTOCOL')
 MQTT_CLIENT_ID = os.getenv('MQTT_CLIENT_ID')
 ANNOUNCE_INTERVAL = 300
 STATE_PUBLISH_INTERVAL = 60
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(levelname)7s: %(message)s',
+    stream=sys.stdout,
+)
+LOG = logging.getLogger('')
 
 class LibvirtHost(dict):
     def __init__(self, *args, **kwargs):
@@ -108,20 +115,20 @@ def set_domain(conn, name: str, state: int):
 async def main():
     reconnect_interval = 3  # [seconds]
     config = LibvirtConfig.from_yaml("/config/config.yaml")
-    print('Config below:')
-    print(json.dumps(config, indent=2))
+    LOG.info('Config below:')
+    LOG.info(json.dumps(config, indent=2))
     while True:
         try:
             await mqtt_client(config)
         except MqttError as error:
-            print(f'Error "{error}". Reconnecting in {reconnect_interval} seconds.')
+            LOG.info(f'Error "{error}". Reconnecting in {reconnect_interval} seconds.')
         finally:
             await asyncio.sleep(reconnect_interval)
 
 async def mqtt_client(config: LibvirtConfig):
     async with AsyncExitStack() as stack:
-        print('Config below:')
-        print(json.dumps(config, indent=2))
+        LOG.info('Config below:')
+        LOG.info(json.dumps(config, indent=2))
         # Keep track of the asyncio tasks that we create, so that
         # we can cancel them on exit
         tasks = set()
@@ -205,17 +212,17 @@ async def state_publish(client, conn, dom, topic_state):
         if domain is None:
             raise Exception("Domain not found")
         message = 'ON' if domain['state'] == 1 else 'OFF'
-        print(f"Publishing state of {dom['Name']} as {message}")
+        LOG.info(f"Publishing state of {dom['Name']} as {message}")
         await client.publish(topic_state, message, qos=1)
         await asyncio.sleep(STATE_PUBLISH_INTERVAL)
 
 async def update_listener(client, conn, dom, messages):
     async for message in messages:
-        print(f"Message for {dom['Name']} received on topic_state: {message.payload.decode()}")
+        LOG.info(f"Message for {dom['Name']} received on topic_state: {message.payload.decode()}")
 
 async def state_listener(client, conn, dom, messages):
     async for message in messages:
-        print(f"Message for {dom['Name']} received on topic_command: {message.payload.decode()}")
+        LOG.info(f"Message for {dom['Name']} received on topic_command: {message.payload.decode()}")
 
 async def cancel_tasks(tasks):
     for task in tasks:
