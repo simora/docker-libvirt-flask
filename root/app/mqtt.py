@@ -165,7 +165,7 @@ async def mqtt_client(config: LibvirtConfig):
                 await client.subscribe(topic_state)
 
                 # announce
-                task = asyncio.create_task(announce(client, dom, topic_config, topic_state, topic_command))
+                task = asyncio.create_task(announce(client, dom, topic_announce, topic_state, topic_command))
                 tasks.add(task)
 
                 # state_publish
@@ -174,14 +174,14 @@ async def mqtt_client(config: LibvirtConfig):
 
         await asyncio.gather(*tasks)
 
-async def announce(client, dom, topic_config, topic_state, topic_command):
+async def announce(client, dom, topic_announce, topic_state, topic_command):
     while True:
         message = {
             "name": dom['Name'],
             "command_topic": topic_command,
             "state_topic": topic_state
         }
-        await client.publish(topic_config, json.dumps(message), qos=1)
+        await client.publish(topic_announce, json.dumps(message), qos=1)
         await asyncio.sleep(ANNOUNCE_INTERVAL)
 
 async def state_publish(client, conn, dom, topic_state):
