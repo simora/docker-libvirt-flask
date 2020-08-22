@@ -149,10 +149,14 @@ async def mqtt_client(config: LibvirtConfig):
             if domains is None:
                 continue
             connections.append(conn)
+            topic_list = []
             for dom in domains:
                 topic_announce = f"homeassistant/switch/{slugify(host['name'])}/{slugify(dom['Name'])}/config"
                 topic_state = f"homeassistant/switch/{slugify(host['name'])}/{slugify(dom['Name'])}/state"
                 topic_command = f"homeassistant/switch/{slugify(host['name'])}/{slugify(dom['Name'])}/set"
+                topic_list.append(topic_announce)
+                topic_list.append(topic_state)
+                topic_list.append(topic_command)
 
                 # update_listener
                 topic_filters = (
@@ -180,7 +184,8 @@ async def mqtt_client(config: LibvirtConfig):
                 messages = await stack.enter_async_context(manager)
                 task = asyncio.create_task(update_listener(client, conn, dom, messages))
                 tasks.add(task)
-                await client.subscribe(topic_command)
+
+            await client.subscribe(topic_list)
 
         await asyncio.gather(*tasks)
 
