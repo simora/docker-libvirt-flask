@@ -13,11 +13,13 @@ MQTT_PASSWORD = os.getenv('MQTT_PASSWORD')
 MQTT_TLS_CONTEXT = os.getenv('MQTT_TLS_CONTEXT')
 MQTT_PROTOCOL = os.getenv('MQTT_PROTOCOL')
 MQTT_CLIENT_ID = os.getenv('MQTT_CLIENT_ID')
+DEBUG = True if os.getenv('DEBUG') is not None else False
 ANNOUNCE_INTERVAL = 300
-STATE_PUBLISH_INTERVAL = 60
+STATE_PUBLISH_INTERVAL = 10
+
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.DEBUG if DEBUG else logging.WARNING,
     format='%(levelname)7s: %(message)s',
     stream=sys.stdout,
 )
@@ -126,8 +128,6 @@ def start_domain(conn, name: str):
 async def main():
     reconnect_interval = 3  # [seconds]
     config = LibvirtConfig.from_yaml("/config/config.yaml")
-    LOG.info('Config below:')
-    LOG.info(json.dumps(config, indent=2))
     while True:
         try:
             await mqtt_client(config)
@@ -212,7 +212,8 @@ async def announce(client, dom, topic_announce, topic_state, topic_command):
             "name": dom['Name'],
             "command_topic": topic_command,
             "state_topic": topic_state,
-            "unique_id": slugify(dom['Name'])
+            "unique_id": slugify(dom['Name']),
+            "optimistic": True
         }
         await client.publish(topic_announce, json.dumps(message), qos=1)
         await asyncio.sleep(ANNOUNCE_INTERVAL)
@@ -231,7 +232,7 @@ async def update_listener(client, conn, dom, messages):
     async for message in messages:
         LOG.info(f"Message for {dom['Name']} received on topic_state: {message.payload.decode()}")
 
-async def state_listener(client, conn, dom, messages):
+async def state_listener(client, conn, dom, messages, topic_state):
     async for message in messages:
         domain = get_domain(conn, dom['Name'])
         if message.payload.decode() == "OFF" and domain['state'] == 1:
