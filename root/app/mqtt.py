@@ -92,17 +92,33 @@ def destroy_domain(conn, name: str):
     if dom == None:
         return False
     domState = dom.state()
-    if domState == libvirt.VIR_DOMAIN_RUNNING:
+    if domState not in [libvirt.VIR_DOMAIN_SHUTOFF, libvirt.VIR_DOMAIN_SHUTDOWN, libvirt.VIR_DOMAIN_NOSTATE]:
         if dom.destroy() < 0:
             return False
     return True
 
-def create_domain(conn, name: str):
+def shutdown_domain(conn, name: str):
+    dom = conn.lookupByName(name)
+    if dom == None:
+        return False
+    domState = dom.state()
+    if domState == libvirt.VIR_DOMAIN_RUNNING:
+        if dom.shutdown() < 0:
+            return False
+    elif domState not in [libvirt.VIR_DOMAIN_SHUTOFF, libvirt.VIR_DOMAIN_SHUTDOWN, libvirt.VIR_DOMAIN_NOSTATE]:
+        if dom.destroy() < 0:
+            return False
+    return True
+
+def start_domain(conn, name: str):
     dom = conn.lookupByName(name)
     if dom == None:
         return None
     domState = dom.state()
-    if domState != libvirt.VIR_DOMAIN_RUNNING:
+    if domState == libvirt.VIR_DOMAIN_PAUSED:
+        if dom.resume() < 0:
+        return False
+    elif domState != libvirt.VIR_DOMAIN_RUNNING:
         if dom.create() < 0:
             return False
     return True
@@ -219,11 +235,11 @@ async def state_listener(client, conn, dom, messages):
     async for message in messages:
         domain = get_domain(conn, dom['Name'])
         if message.payload.decode() == "OFF" and domain['state'] == 1:
-            LOG.info(f"Destroying domain {dom['Name']}")
-            destroy_domain(conn, dom['Name'])
+            LOG.info(f"Shutting down domain {dom['Name']}")
+            shutdown_domain(conn, dom['Name'])
         elif message.payload.decode() == "ON" and domain['state'] == 0:
             LOG.info(f"Creating domain {dom['Name']}")
-            create_domain(conn, dom['Name'])
+            start_domain(conn, dom['Name'])
 
 async def cancel_tasks(tasks):
     for task in tasks:
