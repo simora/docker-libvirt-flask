@@ -200,7 +200,7 @@ async def mqtt_client(config: LibvirtConfig):
                 )
                 manager = client.filtered_messages(topic_filters)
                 messages = await stack.enter_async_context(manager)
-                task = asyncio.create_task(state_listener(client, conn, dom, messages))
+                task = asyncio.create_task(state_listener(client, conn, dom, messages, topic_state))
                 tasks.add(task)
 
         await client.subscribe(topic_list)
@@ -241,6 +241,12 @@ async def state_listener(client, conn, dom, messages, topic_state):
         elif message.payload.decode() == "ON" and domain['state'] == 0:
             LOG.info(f"Creating domain {dom['Name']}")
             start_domain(conn, dom['Name'])
+        await asyncio.sleep(2)
+        domain = get_domain(conn, dom['Name'])
+        message = 'ON' if domain['state'] == 1 else 'OFF'
+        LOG.info(f"Publishing state of {dom['Name']} as {message}")
+        await client.publish(topic_state, message, qos=1)
+
 
 async def cancel_tasks(tasks):
     for task in tasks:
