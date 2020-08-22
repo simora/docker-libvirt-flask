@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
       libxml2-dev \
       libxslt-dev \
       openssh-client && \
-      apt-get -y autoremove
+      apt-get -y autoremove && \
+      update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8
 RUN pip3 install --no-cache-dir -r /app/requirements.txt && \
     rm -rf \
       /root/.cache \
