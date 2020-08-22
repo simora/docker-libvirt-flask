@@ -55,20 +55,20 @@ def get_conn(uri: str, rw: bool = False):
     return conn
 
 def get_domains(conn):
-    getDomResult = None
+    getDomResult = []
     domains = conn.listAllDomains(0)
-    if len(domains) != 0:
-        getDomResult = []
-        for dom in domains:
-            state, reason = dom.state()
-            if state == libvirt.VIR_DOMAIN_RUNNING:
-                getDomResult.append({'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': 1})
-            else:
-                getDomResult.append({'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': 0})
+    if len(domains) == 0:
+        return None
+    for dom in domains:
+        state, reason = dom.state()
+        if state == libvirt.VIR_DOMAIN_RUNNING:
+            getDomResult.append({'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': 1})
+        else:
+            getDomResult.append({'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': 0})
     return getDomResult
 
 def get_domain(conn, name: str):
-    getdomResult = None
+    getdomResult = {}
     dom = conn.lookupByName(name)
     if dom == None:
         return None
