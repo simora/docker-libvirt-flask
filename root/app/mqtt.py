@@ -190,6 +190,7 @@ async def state_publish(client, conn, dom, topic_state):
         domain = get_domain(conn, dom['Name'])
         if domain is None:
             raise Exception("Domain not found")
+        print(f"Domain {dom['Name']} has state of {domain['state']}")
         message = 'on' if domain['state'] == 1 else 'off'
         await client.publish(topic_state, message, qos=1)
         await asyncio.sleep(STATE_PUBLISH_INTERVAL)
