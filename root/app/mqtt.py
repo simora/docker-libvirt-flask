@@ -34,8 +34,8 @@ class LibvirtHost(dict):
 class LibvirtConfig(dict):
     def from_yaml(self, configFile: str):
         with open(configFile) as file:
-            self.rawConfig = yaml.load(file, Loader=yaml.FullLoader)
-        for key, value in self.rawConfig.items():
+            rawConfig = yaml.load(file, Loader=yaml.FullLoader)
+        for key, value in rawConfig.items():
             if key.lower() == 'hosts' and len(value) > 0:
                 for host in value:
                     if 'hosts' not in self.keys():
