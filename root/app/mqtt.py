@@ -241,6 +241,9 @@ async def state_listener(client, conn, dom, messages, topic_state):
         elif message.payload.decode() == "ON" and domain['state'] == 0:
             LOG.info(f"Creating domain {dom['Name']}")
             start_domain(conn, dom['Name'])
+        elif message.payload.decode() == "DIE":
+            LOG.info(f"Destroying domain {dom['Name']}")
+            destroy_domain(conn, dom['Name'])
         await asyncio.sleep(2)
         domain = get_domain(conn, dom['Name'])
         message = 'ON' if domain['state'] == 1 else 'OFF'
