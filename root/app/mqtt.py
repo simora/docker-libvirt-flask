@@ -32,17 +32,20 @@ class LibvirtHost(dict):
         return cls(datadict.items())
 
 class LibvirtConfig(dict):
-    def from_yaml(self, configFile: str):
+    @classmethod
+    def from_yaml(cls, configFile: str):
+        datadict = {}
         with open(configFile) as file:
             rawConfig = yaml.load(file, Loader=yaml.FullLoader)
         for key, value in rawConfig.items():
             if key.lower() == 'hosts' and len(value) > 0:
                 for host in value:
-                    if 'hosts' not in self.keys():
-                        self['hosts'] = []
-                    self['hosts'].append(LibvirtHost.from_dict(host))
+                    if 'hosts' not in datadict.keys():
+                        datadict['hosts'] = []
+                    datadict['hosts'].append(LibvirtHost.from_dict(host))
             else:
-                self[key] = value
+                datadict[key] = value
+        return cls(datadict.items())
 
 def get_conn(uri: str, rw: bool = False):
     if rw:
