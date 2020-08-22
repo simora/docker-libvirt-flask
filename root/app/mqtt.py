@@ -185,8 +185,7 @@ async def mqtt_client(config: LibvirtConfig):
                 task = asyncio.create_task(update_listener(client, conn, dom, messages))
                 tasks.add(task)
 
-            await client.subscribe(topic_list)
-
+        await client.subscribe(topic_list)
         await asyncio.gather(*tasks)
 
 async def announce(client, dom, topic_announce, topic_state, topic_command):
