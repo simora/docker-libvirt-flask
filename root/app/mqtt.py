@@ -105,6 +105,8 @@ def set_domain(conn, name: str, state: int):
 async def main():
     reconnect_interval = 3  # [seconds]
     config = LibvirtConfig().from_yaml("/config/config.yaml")
+    print('Config below:')
+    print(json.dumps(config, indent=2))
     while True:
         try:
             await mqtt_client(config)
@@ -115,6 +117,8 @@ async def main():
 
 async def mqtt_client(config: LibvirtConfig):
     async with AsyncExitStack() as stack:
+        print('Config below:')
+        print(json.dumps(config, indent=2))
         # Keep track of the asyncio tasks that we create, so that
         # we can cancel them on exit
         tasks = set()
