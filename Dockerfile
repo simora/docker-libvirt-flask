@@ -8,7 +8,7 @@ COPY root/ /
 ENV DEBIAN_FRONTEND="noninteractive"
 
 RUN apt-get update && apt-get install -y \
-      python3 \
+      python3.8 \
       python3-pip \
       libvirt-dev \
       libxml2-dev \
