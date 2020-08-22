@@ -193,5 +193,15 @@ async def update_listener(client, conn, dom, messages):
 async def state_listener():
     pass
 
+async def cancel_tasks(tasks):
+    for task in tasks:
+        if task.done():
+            continue
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+
 if __name__ == '__main__':
     asyncio.run(main())
