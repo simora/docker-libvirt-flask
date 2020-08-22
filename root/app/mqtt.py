@@ -184,7 +184,7 @@ async def mqtt_client(config: LibvirtConfig):
                 )
                 manager = client.filtered_messages(topic_filters)
                 messages = await stack.enter_async_context(manager)
-                task = asyncio.create_task(update_listener(client, conn, dom, messages))
+                task = asyncio.create_task(state_listener(client, conn, dom, messages))
                 tasks.add(task)
 
         await client.subscribe(topic_list)
