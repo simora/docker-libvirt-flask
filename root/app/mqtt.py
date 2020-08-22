@@ -117,7 +117,7 @@ def start_domain(conn, name: str):
     domState = dom.state()
     if domState == libvirt.VIR_DOMAIN_PAUSED:
         if dom.resume() < 0:
-        return False
+            return False
     elif domState != libvirt.VIR_DOMAIN_RUNNING:
         if dom.create() < 0:
             return False
