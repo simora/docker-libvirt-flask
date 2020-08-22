@@ -87,30 +87,25 @@ def get_domain(conn, name: str):
         getdomResult['state'] = 0
     return getdomResult
 
-def set_domain(conn, name: str, state: int):
+def destroy_domain(conn, name: str):
+    dom = conn.lookupByName(name)
+    if dom == None:
+        return False
+    domState = dom.state()
+    if domState == libvirt.VIR_DOMAIN_RUNNING:
+        if dom.destroy() < 0:
+            return False
+    return True
+
+def create_domain(conn, name: str):
     dom = conn.lookupByName(name)
     if dom == None:
         return None
     domState = dom.state()
-    if domState == libvirt.VIR_DOMAIN_RUNNING:
-        curState = 1
-    else:
-        curState = 0
-    if state == curState:
-        return {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState}
-    else:
-        if curState == 0 and state == 1:
-            if dom.create() < 0:
-                return None
-        elif curState == 1 and state == 0:
-            if dom.destroy() < 0:
-                return None
-    domState = dom.state()
-    if domState == libvirt.VIR_DOMAIN_RUNNING:
-        curState = 1
-    else:
-        curState = 0
-    return {'Name': dom.name(), 'UUID': dom.UUIDString(), 'state': curState}
+    if domState != libvirt.VIR_DOMAIN_RUNNING:
+        if dom.create() < 0:
+            return False
+    return True
 
 async def main():
     reconnect_interval = 3  # [seconds]
@@ -222,7 +217,11 @@ async def update_listener(client, conn, dom, messages):
 
 async def state_listener(client, conn, dom, messages):
     async for message in messages:
-        LOG.info(f"Message for {dom['Name']} received on topic_command: {message.payload.decode()}")
+        domain = get_domain(conn, dom['Name'])
+        if message.payload.decode() == "OFF" and domain['state'] == 1:
+            destroy_domain(conn, dom['Name'])
+        elif message.payload.decode() == "ON" and domain['state'] == 0:
+            create_domain(conn, dom['Name'])
 
 async def cancel_tasks(tasks):
     for task in tasks:
