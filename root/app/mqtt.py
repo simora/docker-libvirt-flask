@@ -154,9 +154,9 @@ async def mqtt_client(config: LibvirtConfig):
                 topic_announce = f"homeassistant/switch/{slugify(host['name'])}/{slugify(dom['Name'])}/config"
                 topic_state = f"homeassistant/switch/{slugify(host['name'])}/{slugify(dom['Name'])}/state"
                 topic_command = f"homeassistant/switch/{slugify(host['name'])}/{slugify(dom['Name'])}/set"
-                topic_list.append((topic_announce, 1))
-                topic_list.append((topic_state, 1))
-                topic_list.append((topic_command, 1))
+                topic_list.append((topic_announce, 0))
+                topic_list.append((topic_state, 0))
+                topic_list.append((topic_command, 0))
 
                 # update_listener
                 topic_filters = (
