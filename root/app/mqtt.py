@@ -107,7 +107,7 @@ def set_domain(conn, name: str, state: int):
 
 async def main():
     reconnect_interval = 3  # [seconds]
-    config = LibvirtConfig().from_yaml("/config/config.yaml")
+    config = LibvirtConfig.from_yaml("/config/config.yaml")
     print('Config below:')
     print(json.dumps(config, indent=2))
     while True:
