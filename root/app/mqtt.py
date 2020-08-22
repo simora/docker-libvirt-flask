@@ -179,7 +179,8 @@ async def announce(client, dom, topic_announce, topic_state, topic_command):
         message = {
             "name": dom['Name'],
             "command_topic": topic_command,
-            "state_topic": topic_state
+            "state_topic": topic_state,
+            "unique_id": slugify(dom['Name'])
         }
         await client.publish(topic_announce, json.dumps(message), qos=1)
         await asyncio.sleep(ANNOUNCE_INTERVAL)
