@@ -219,8 +219,10 @@ async def state_listener(client, conn, dom, messages):
     async for message in messages:
         domain = get_domain(conn, dom['Name'])
         if message.payload.decode() == "OFF" and domain['state'] == 1:
+            LOG.info(f"Destroying domain {dom['Name']}")
             destroy_domain(conn, dom['Name'])
         elif message.payload.decode() == "ON" and domain['state'] == 0:
+            LOG.info(f"Creating domain {dom['Name']}")
             create_domain(conn, dom['Name'])
 
 async def cancel_tasks(tasks):
